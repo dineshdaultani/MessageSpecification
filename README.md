@@ -15,4 +15,4 @@ http-server -a localhost -p 8000
 
 (Please don't change the above port and host because it binds to spring origin controller, otherwise the spring web app wouldn't be able to accept the angular js connections!)
 
-
+### Run java web war file present in the target folder
