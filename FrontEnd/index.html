@@ -1,0 +1,248 @@
+﻿<!DOCTYPE html>
+<html ng-app="app">
+<head>
+	<title>Shear Water: Message Specification</title>
+</head>
+<body>
+	<!-- Front End HTML Elements -->
+	<div ng-controller="createController">
+		<div>
+			<div><h3>Create or Update Specification</h3></div>
+			Name: <input type="text" ng-model="elemnt.name" ng-required="true" />
+			<ul>
+				<li ng-repeat="elemnt in questionelemnt">
+
+					<div>
+						<div style="display:inline">
+							<span>
+								<select ng-model="types[$index]" ng-options="template.value as template.name for template in spec.configs">
+									<option value="" selected="selected">Choose</option>
+								</select>
+							</span>
+						</div>
+
+						<div style="display:inline">
+							<span>
+								<input type="text" ng-model="values[$index]" placeholder="str" ng-required="true"/>
+							</span>
+						</div>
+						<div style="display:inline">
+							<span ng-hide="elemnt.length == 1">
+								<a href ng-click="questionelemnt.splice($index, 1)">remove</a>
+							</span>
+						</div>
+					</div>
+					<!-- <hr/> -->
+					<li>
+						<a href ng-click="newItem($event)">Add More</a>
+					</li>
+				</ul>
+			</div>
+			<div id="displayitems" style="color:blue;">
+				{{ response_message }}
+			</div>
+			<div>
+				<button ng-click="showitems($event)">Submit</button>
+
+			</div>
+
+		</div>
+
+
+		<br/><br/><br/><br/><br/>
+
+		<div ng-controller="deleteController">
+			<div>
+				<div><h3>Delete Specification</h3></div>
+				Name: <input type="text" ng-model="specName" ng-required="true" />
+
+			</div>
+			<div id="displayitems" style="color:blue;">
+				{{ delete_response_message | json}}  
+			</div>
+			<div>
+				<button ng-click="deleteSpecs($event)">Submit</button>
+
+			</div>
+
+		</div>
+
+		<br/><br/><br/><br/><br/>
+
+
+		<div ng-controller="readController">
+			<div>
+				<div><h3>Read Specification</h3></div>
+				Name: <input type="text" ng-model="specName" ng-required="true" />
+
+			</div>
+			<div id="displayitems" style="color:blue;">
+				{{ read_response_message }}  
+			</div>
+			<div>
+				<button ng-click="readSpecs($event)">Submit</button>
+			</div>
+
+		</div>
+
+		<br/><br/><br/><br/><br/>
+
+		<div ng-controller="runController">
+			<div>
+				<div><h3>Run Specification</h3></div>
+				Name: <input type="text" ng-model="specName" ng-required="true" />
+
+			</div>
+			<div id="displayitems" style="color:blue;">
+				{{ run_response_message | json}}  
+			</div>
+			<div>
+				<button ng-click="runSpecs($event)">Submit</button>
+
+			</div>
+
+		</div>
+
+		<br/><br/><br/><br/><br/>
+
+		
+
+
+	<!-- ------------------------------------------------------------------------------------------- -->
+
+	<!--  Angular JS Code -->
+
+	
+		<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.6/angular.min.js"></script>
+		<script>
+
+    	// Creating Angular Module
+    	var app = angular.module("app", []);
+
+    	app.config(function($controllerProvider, $provide) {
+            //Used to handle loading controllers dynamically
+            app.controller = $controllerProvider.register;
+        });
+
+
+    // Create Controller
+    app.controller('createController', function($http, $scope){
+
+    	$scope.values = [];
+    	$scope.types = [];
+    	$scope.response_message = "";
+
+    	$scope.showitems = function($event){
+    		$scope.req = {
+    			'name' : $scope.elemnt.name,
+    			'type': $scope.types,
+    			'values': $scope.values
+    		};
+    		$http.post('http://localhost:8080/specs/controller/create',
+    			$scope.req).then(function successCallback(response){
+
+    				if(response.status == 200 && response.data == true){
+    					$scope.response_message = 'Specification created sucessfully!';
+    					console.log("specification created sucessfully");
+    				}else{
+    					$scope.response_message = 'Specification not created sucessfully!';
+    					console.log("specification not created sucessfully");
+    				}
+    				console.log("Create Specification: ",response);
+    			},
+    			function errorCallback(response) {
+    				console.log(response);
+    			});
+
+
+    		};
+
+     	// Creating select oprtion through angular
+     	var counter=0;
+     	$scope.questionelemnt = [ {id:counter, name : '', value : '',inline:true} ];
+
+     	$scope.newItem = function($event){
+     		counter++;
+     		$scope.questionelemnt.push(  { id:counter, name : '', value : '',inline:true} );
+     		$event.preventDefault();
+     	}
+
+        //Drop Down list for creating specification
+        $scope.spec = {};
+
+        //Configuration
+        $scope.spec.configs = [
+        {'name': 'String', 'value': 'string'},
+        {'name': 'Specification', 'value': 'spec'},
+        ];
+        //Setting first option as selected in configuration select
+        $scope.spec.config = $scope.spec.configs[0].value;
+
+    });
+
+    // Delete Controller
+    app.controller('deleteController', function($http, $scope){
+    	$scope.delete_response_message = "";
+    	$scope.deleteSpecs = function($event){
+    		$http.post('http://localhost:8080/specs/controller/delete',
+    			$scope.specName).then(function successCallback(response){
+    				if(response.status == 200 && response.data == true){
+    					$scope.delete_response_message = "deleted sucessfully";
+    				}else{
+    					$scope.delete_response_message = 'not deleted sucessfully!';
+    				}
+    			},
+    			function errorCallback(response) {
+    				console.log("error:");
+    				console.log(response);
+    			});           
+    		};
+    	});
+    
+    // Read Controller
+    app.controller('readController', function($http, $scope){
+    	$scope.read_response_message = "";
+    	$scope.readSpecs = function($event){
+    		$http.post('http://localhost:8080/specs/controller/read',
+    			$scope.specName).then(function successCallback(response){
+    				if(response.status == 200){
+    					$scope.read_response_message = response.data;
+    					console.log(response.data);
+    				}else{
+    					$scope.read_response_message = 'Specification not readed sucessfully!';
+    					console.log("specification not readed sucessfully");
+    				}
+    			},
+    			function errorCallback(response) {
+    				console.log(response);
+    			});           
+    		};
+    	});
+
+
+    // Run Controller 
+    app.controller('runController', function($http, $scope){
+    	$scope.run_response_message = "";
+    	$scope.runSpecs = function($event){
+    		$http.post('http://localhost:8080/specs/controller/run',
+    			$scope.specName).then(function successCallback(response){
+    				if(response.status == 200){
+    					$scope.run_response_message = response.data['Response'];
+    					console.log(response.data);
+    				}else{
+    					$scope.run_response_message = 'Specification not run sucessfully!';
+    					console.log("specification not run sucessfully");
+    				}
+    			},
+    			function errorCallback(response) {
+    				console.log("error:");
+    				console.log(response);
+    			});           
+    		};
+    	});
+
+
+    </script>
+
+</body>
+</html>
