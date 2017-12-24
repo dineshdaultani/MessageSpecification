@@ -20,7 +20,7 @@ http-server -a localhost -p 8000
 
 #### Most Important files are:
 
-src -> main -> java -> shearwater -> controller (Containing all the JAVA Spring Controllers and processing logic of the application)
+src -> main -> java -> shearwater -> controller -> SpecificationController (Containing all the JAVA Spring Controllers and processing logic of the application)
 
 
 FrontEnd -> index.html (Containing Angular JS controllers and HTML UI components)
